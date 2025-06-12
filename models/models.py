@@ -12,6 +12,7 @@ class User(db.Model):
     address = db.Column(db.String(200))
     pin_code = db.Column(db.String(10))
     phone_number = db.Column(db.String(15), nullable=False)
+    role = db.Column(db.String(10), nullable = False, default = 'user')
     #User can have multiple reservations
     reservations = db.relationship('Reservation', backref='user') 
     #backref: Creates a user attribute on the Reservation model, allowing you to access the User object from a Reservation object

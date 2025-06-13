@@ -1,23 +1,39 @@
-<html>
-    <head>
-        <title>
-            Register
-        </title>
-    </head>
+{% extends 'layout.html' %}
 
-    <body>
-        <h1> User Registration</h1>
-        <form method = 'POST'>
-            Username: <input type = "text" name = "username" required> <br>
-            Password: <input type = "password" name = "pasword" required> <br>
-            Fullname: <input type = "text" name = "fullname" required> <br>
-            Address: <input type = "text" name = "address" required> <br>
-            Pin Code: <input type = "text" name = "pin_code" required> <br>
-            Phone Number: <input type = "text" name = "phone_number" required> <br>
-            <input type = "submit" value = "Register">
+{% block content %}
+<div class="register-wrapper">
+    <div class="register-box">
+        <h2 class="text-center">Register</h2>
+        <form method="POST">
+            <div class="form-group">
+                <label>Username</label>
+                <input type="text" name="username" required>
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" name="password" required>
+            </div>
+            <div class="form-group">
+                <label>Fullname</label>
+                <input type="text" name="fullname" required>
+            </div>
+            <div class="form-group">
+                <label>Phone Number</label>
+                <input type="text" name="phone_number" required>
+            </div>
+            <div class="form-group">
+                <label>Address</label>
+                <input type="text" name="address" required>
+            </div>
+            <div class="form-group">
+                <label>Pin Code</label>
+                <input type="text" name="pincode" required>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">Register</button>
         </form>
-        <p>
-            Already registered? <a href="/login">Login</a>
+        <p class="text-center mt-3">
+            Already Registered? <a href="{{ url_for('login') }}">Login</a>
         </p>
-    </body>
-</html>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,79 @@
+body{
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    background: linear-gradient(150deg, #748bd7, #ba52c6);
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.login-wrapper{
+    width: 100%;
+    max-width: 400px;
+    padding: 50px;
+    background-color: rgb(235, 221, 239);
+    border-radius: 20px;
+    box-shadow: 0 10px 25px rgba(55, 49, 49, 0.1);
+}
+
+.login-box h2{
+    margin-bottom: 30px;
+    font-weight: bold;
+    text-align: center;
+    font-family: 'Open Sans', sans-serif;
+    font-size: 25px;
+}
+
+.form-group{
+    margin-bottom: 20px;
+    font-family: 'Open Sans', sans-serif;
+    font-size: 15px;
+}
+
+.form-group label{
+    display: block;
+    font-size: 19px;
+    color: #313a66;
+    margin-bottom: 7px;
+}
+
+input[type="text"],
+input[type="password"]{
+    width: 100%;
+    padding: 5px;
+    border: non;
+    border-bottom: 1.5px solid #ccc;
+    outline: none;
+    transition: border-color 0.3s;
+}
+
+input[type="text"]:focus,
+input[type="password"]:focus{
+    border-color: #3d4357
+}
+
+button, input[type="submit"]{
+    width: 100%;
+    padding: 10px;
+    background-color: #6e8efb;
+    border: none;
+    border-radius: 25px;
+    color: white;
+    font-weight: bold;
+    font-family: 'Open Sans', sans-serif;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+button:hover, input[type="submit"]:hover{
+    background-color: #4e6efb;
+}
+
+.signup-link{
+    text-align: center;
+    margin-top: 15px;
+    font-size: 14px;
+    font-family: 'Open Sans', sans-serif;
+}

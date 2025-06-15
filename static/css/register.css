@@ -1,34 +1,59 @@
+body, html {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow-y: auto;
+    font-family: "Segoe UI", sans-serif;
+    background-color: #f7fbff;
+}
+
 .register-wrapper {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
-    background-color: rgb(235, 221, 239);
+    padding: 40px 15px;
 }
 
 .register-box {
     background-color: rgb(235, 221, 239);
-    padding: 30px;
+    padding: 30px 40px;
     border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
     width: 100%;
-    max-width: 400px;
-    height: 100vh;
+    max-width: 850px;
 }
 
-.form-group {
-    margin-bottom: 15px;
+form .row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.col-md-6 {
+    width: 48%;
 }
 
 .form-group label {
     display: block;
-    margin-bottom: 5px;
+    margin-bottom: 6px;
     font-weight: 500;
+    color: #333;
 }
 
-.form-group input {
+.form-group input,
+.form-group select {
     width: 100%;
     padding: 10px;
     border-radius: 6px;
     border: 1px solid #ccc;
+}
+
+.form-check-input {
+    margin-right: 10px;
+}
+
+.btn-block {
+    padding: 10px;
+    font-weight: 600;
+    border-radius: 15px;
 }

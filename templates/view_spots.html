@@ -1,0 +1,37 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Parking Spots for: {{ lot.name }}</h2>
+    <p><strong>Address:</strong> {{ lot.address }}, {{ lot.pin_code }}</p>
+
+    {% if spots %}
+        <table class="table table-bordered table-striped mt-3">
+            <thead class="table-dark">
+                <tr>
+                    <th>Spot Number</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for spot in spots %}
+                <tr>
+                    <td>{{ spot.spot_number }}</td>
+                    <td>
+                        {% if spot.is_available %}
+                            Available
+                        {% else %}
+                            Occupied
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No parking spots found.</p>
+    {% endif %}
+
+    <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary mt-3">← Back to Dashboard</a>
+</div>
+{% endblock %}

@@ -34,6 +34,7 @@ class ParkingSpot(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     # Foreign key linking to parking lot
     lot_id = db.Column(db.Integer, db.ForeignKey('parking_lot.id'), nullable=False)
+    spot_number = db.Column(db.Integer, nullable=False)
     status = db.Column(db.String(1), nullable=False, default='A')  # A = Available, O = Occupied
     #Parking spot can have multiple reservations
     reservations = db.relationship('Reservation', backref='spot')

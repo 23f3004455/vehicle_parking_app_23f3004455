@@ -9,6 +9,21 @@ body{
     align-items: center;
 }
 
+.form-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 80vh;
+}
+
+.form-card {
+    background-color: rgb(235, 221, 239);
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    width: 400px;
+}
+
 .login-wrapper{
     width: 100%;
     max-width: 400px;
@@ -40,6 +55,7 @@ body{
 }
 
 input[type="text"],
+input[type="number"],
 input[type="password"]{
     width: 100%;
     padding: 5px;
@@ -50,6 +66,7 @@ input[type="password"]{
 }
 
 input[type="text"]:focus,
+input[type="number"]:focus,
 input[type="password"]:focus{
     border-color: #3d4357
 }

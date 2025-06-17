@@ -1,0 +1,28 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<div class="form-wrapper">
+    <div class="form-card">
+        <h2>Create Parking Lot</h2>
+
+        <form method="post" action="/admin/lots/create">
+            <label for="location_name">Prime Location Name:</label><br>
+            <input type="text" id="location_name" name="location_name" required><br><br>
+
+            <label for="address">Address:</label><br>
+            <input type="text" id="address" name="address" required><br><br>
+
+            <label for="pin_code">Pin Code:</label><br>
+            <input type="text" id="pin_code" name="pin_code" required><br><br>
+
+            <label for="price">Price (₹ per hour):</label><br>
+            <input type="number" id="price" name="price" step="0.01" required><br><br>
+
+            <label for="max_spots">Maximum Number of Spots:</label><br>
+            <input type="number" id="max_spots" name="max_spots" required><br><br>
+
+            <button type="submit">Create Parking Lot</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

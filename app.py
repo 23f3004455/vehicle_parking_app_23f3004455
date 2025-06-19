@@ -18,7 +18,6 @@ db.init_app(app)
 with app.app_context():  # Required for database operations outside routes
     
     # Create all tables based on our models (User, ParkingLot, ParkingSpot, Reservation)
-    db.drop_all()
     db.create_all()
     
     # Auto-create admin user
@@ -45,9 +44,13 @@ with app.app_context():  # Required for database operations outside routes
             admin.role = 'admin'
             db.session.commit()
 
+
+
 @app.route('/')
 def home():
     return redirect(url_for('login'))
+
+
 
 @app.route('/register', methods = ['GET', 'POST'])
 def register():
@@ -76,6 +79,8 @@ def register():
     
     return render_template('register.html') #when user types url or clicks link--- GET method
 
+
+
 @app.route('/login', methods = ['GET', 'POST'])
 def login():
     if request.method == 'POST': 
@@ -101,14 +106,18 @@ def login():
     
     return render_template('login.html')
 
-@app.route('/logout')
+
+
+@app.route('/logout', methods=['GET','POST'])
 def logout():
     session.clear()
     return redirect('/')
 
+
+
 @app.route('/admin/lots/create', methods=['GET', 'POST'])
 def create_parking_lot():
-    if 'admin' not in session:
+    if session.get('role') != 'admin':
         return redirect('/login')
 
     if request.method == 'POST':
@@ -118,7 +127,7 @@ def create_parking_lot():
         price = float(request.form['price'])
         max_spots = int(request.form['max_spots'])
 
-        #Create the parking lot
+        # Create the parking lot
         new_lot = ParkingLot(
             name=location,
             address=address,
@@ -129,9 +138,12 @@ def create_parking_lot():
         db.session.add(new_lot)
         db.session.commit() 
 
-        #Auto-create parking spots for this lot
-        for _ in range(max_spots):
-            spot = ParkingSpot(lot_id=new_lot.id, status='A')
+        for i in range(1, max_spots + 1):
+            spot = ParkingSpot(
+                lot_id=new_lot.id,
+                spot_number=i,  
+                status='A'
+            )
             db.session.add(spot)
 
         db.session.commit()
@@ -141,13 +153,63 @@ def create_parking_lot():
     return render_template('create_lot.html')
 
 
+@app.route('/admin/lots/edit/<int:lot_id>', methods=['GET', 'POST'])
+def edit_lot(lot_id):
+    lot = ParkingLot.query.get_or_404(lot_id)
+    old_max_spots = lot.max_spots
+
+    if request.method == 'POST':
+        # Get updated data from form
+        lot.location_name = request.form['location_name']
+        lot.address = request.form['address']
+        lot.pin_code = request.form['pin_code']
+        lot.price = request.form['price']
+
+        new_max_spots = int(request.form['max_spots'])
+
+        # Update the lot's max_spots
+        lot.max_spots = new_max_spots
+
+        # Handle spot changes
+        if new_max_spots > old_max_spots:
+            # Add new spots
+            for i in range(old_max_spots + 1, new_max_spots + 1):
+                new_spot = ParkingSpot(lot_id=lot.id, spot_number=i, status='A')
+                db.session.add(new_spot)
+
+        elif new_max_spots < old_max_spots:
+            # Get spots beyond new limit
+            extra_spots = ParkingSpot.query.filter(
+                ParkingSpot.lot_id == lot.id,
+                ParkingSpot.spot_number > new_max_spots
+            ).all()
+
+            # Only delete if all extra spots are available
+            if any(spot.status == 'O' for spot in extra_spots):
+                flash('Cannot reduce spots. Some higher-numbered spots are still occupied.', 'danger')
+                return redirect(url_for('edit_lot', lot_id=lot.id))
+
+            for spot in extra_spots:
+                db.session.delete(spot)
+
+        # Save all changes
+        db.session.commit()
+        flash('Lot updated successfully.', 'success')
+        return redirect(url_for('admin_dashboard'))
+
+    return render_template('edit_lot.html', lot=lot)
+
+
+
 @app.route('/admin/dashboard')
 def admin_dashboard():
     if session.get('role') != 'admin':
-        return "Access not granted"
-    
-    all_lots = ParkingLot.query.all()  # fetch all parking lots
-    return render_template('admin_dashboard.html', lots=all_lots)
+        return redirect('/login')
+
+    parking_lots = ParkingLot.query.all() #fetch all parking lots
+    return render_template('admin_dashboard.html', parking_lots=parking_lots)
+
+
 
 @app.route('/user/dashboard')
 def user_dashboard():
@@ -156,58 +218,52 @@ def user_dashboard():
     
     return render_template('user_dashboard.html')
 
-@app.route('/admin/lots/create', methods=['GET', 'POST'])
-def create_lot():
-    if request.method == 'POST':
-        name = request.form.get("location_name")
-        address = request.form.get("address")
-        pin_code = request.form.get("pin_code")
-        price = request.form.get("price")
-        max_spots = request.form.get("max_spots")
 
-        if not name or not address or not pin_code or not price or not max_spots:
-            return redirect(url_for('create_lot'))
+@app.route('/admin/users')
+def admin_view_users():
+    users = User.query.filter_by(role='user').all()  # Only normal users
 
-        try:
-            max_spots = int(max_spots)
-        except ValueError:
-            return redirect(url_for('create_lot'))
+    user_data = []
 
-        try:
-            lot = ParkingLot(
-                name=name,
-                address=address,
-                pin_code=pin_code,
-                price=float(price),
-                max_spots=max_spots
-            )
-            db.session.add(lot)
-            db.session.commit()
+    for user in users:
+        # Find active reservation (where leaving_time is None)
+        active_reservation = Reservation.query.filter_by(user_id=user.id, leaving_time=None).first()
+        
+        if active_reservation:
+            spot = ParkingSpot.query.get(active_reservation.spot_id)
+            lot = ParkingLot.query.get(spot.lot_id)
+            user_data.append({
+                'fullname': user.fullname,
+                'username': user.username,
+                'phone': user.phone_number,
+                'spot_number': spot.spot_number,
+                'lot_name': lot.location_name,
+                'status': 'Occupied'
+            })
+        else:
+            user_data.append({
+                'fullname': user.fullname,
+                'username': user.username,
+                'phone': user.phone_number,
+                'spot_number': '-',
+                'lot_name': '-',
+                'status': 'No Active Booking'
+            })
 
-            # Create spots
-            for i in range(1, max_spots + 1):
-                print(f"Creating spot {i} for lot {lot.id}")  # Debug print
-                spot = ParkingSpot(
-                    lot_id=lot.id,
-                    spot_number=i,
-                    status='A'
-                )
-                db.session.add(spot)
-
-            db.session.commit()
-            return redirect(url_for('admin_dashboard'))
-
-        except Exception as e:
-            print("Error creating lot:", e)
-            return redirect(url_for('create_lot'))
-
-    return render_template('create_lot.html')
-
+    return render_template('admin_users.html', users=user_data)
 
 
 @app.route('/admin/lots/delete/<int:lot_id>', methods=['POST'])
 def delete_lot(lot_id):
     lot = ParkingLot.query.get_or_404(lot_id)
+
+    # Check if any spot is occupied
+    occupied_spots = ParkingSpot.query.filter_by(lot_id=lot.id, status='O').all()
+
+    if occupied_spots:
+        # Use flash to send error message
+        flash('You can delete a lot only if all its spots are empty.', 'danger')
+        return redirect(url_for('admin_dashboard'))
 
     try:
         # Delete all associated spots first
@@ -216,10 +272,15 @@ def delete_lot(lot_id):
         # Then delete the lot itself
         db.session.delete(lot)
         db.session.commit()
+        flash('Parking lot deleted successfully.', 'success')
     except Exception as e:
         print("Error deleting lot:", e)
+        flash('Something went wrong while deleting the lot.', 'danger')
 
     return redirect(url_for('admin_dashboard'))
+
+
+
 
 @app.route('/admin/lots/<int:lot_id>/spots')
 def view_spots(lot_id):

@@ -4,7 +4,7 @@ body, html {
     padding: 0;
     overflow-y: auto;
     font-family: "Segoe UI", sans-serif;
-    background-color: #f7fbff;
+    background: linear-gradient(150deg, #748bd7, #ba52c6);
 }
 
 .register-wrapper {

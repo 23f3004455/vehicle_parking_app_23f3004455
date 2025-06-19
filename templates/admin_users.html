@@ -1,0 +1,39 @@
+{% set title = "View" %}
+{% extends 'layout.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-3">Registered Users and Parking Status</h2>
+    <table class="table table-bordered table-hover">
+        <thead class="table-dark">
+            <tr>
+                <th>Full Name</th>
+                <th>Username</th>
+                <th>Phone</th>
+                <th>Spot Number</th>
+                <th>Lot Name</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in users %}
+            <tr>
+                <td>{{ user.fullname }}</td>
+                <td>{{ user.username }}</td>
+                <td>{{ user.phone }}</td>
+                <td>{{ user.spot_number }}</td>
+                <td>{{ user.lot_name }}</td>
+                <td>
+                    {% if user.status == 'Occupied' %}
+                        <span class="badge bg-danger">{{ user.status }}</span>
+                    {% else %}
+                        <span class="badge bg-secondary">{{ user.status }}</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary mt-3">← Back to Dashboard</a>
+</div>
+{% endblock %}

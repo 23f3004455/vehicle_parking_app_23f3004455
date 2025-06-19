@@ -1,5 +1,19 @@
 {% extends 'layout.html' %}
 
+<style>
+body {
+    overflow-y: auto !important;
+    height: auto !important;
+    padding-top: 30px;
+}
+
+h2 {
+    margin-top: 30px;
+    color: black;
+}
+</style>
+
+{% set title = "View" %}
 {% block content %}
 <div class="container mt-4">
     <h2>Parking Spots for: {{ lot.name }}</h2>
@@ -18,7 +32,7 @@
                 <tr>
                     <td>{{ spot.spot_number }}</td>
                     <td>
-                        {% if spot.is_available %}
+                        {% if spot.status == 'A' %}
                             Available
                         {% else %}
                             Occupied

@@ -1,0 +1,38 @@
+{% set title = "View Available Parking Lots" %}
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card shadow-sm p-4 bg-white">
+        <h2 class="mb-4">Available Parking Lots</h2>
+        <table class="table table-hover table-bordered">
+            <thead class="table-dark">
+                <tr>
+                    <th>Lot Name</th>
+                    <th>Address</th>
+                    <th>Available Spots</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in available_lots %}
+                <tr>
+                    <td>{{ item.lot.name }}</td>
+                    <td>{{ item.lot.address }}</td>
+                    <td>{{ item.available_count }}</td>
+                    <td>
+                        {% if item.available_count > 0 %}
+                            <a href="{{ url_for('reserve_spot', lot_id=item.lot.id) }}" 
+                               class="btn btn-success btn-sm">Reserve</a>
+                        {% else %}
+                            <span class="text-muted">Full</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <a href="{{ url_for('user_dashboard') }}" class="btn btn-secondary mt-3">← Back to Dashboard</a>
+</div>
+{% endblock %}

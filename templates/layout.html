@@ -13,6 +13,10 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
     {% elif title == "Edit Parking Lot" or title == "View" %}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/edit_lot.css') }}">
+    {% elif title == "User_dashboard" %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/user_dashboard.css') }}">
+    {% elif title == "View Available Parking Lots" %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/view_available_parking_lots.css') }}">
     {% endif %}
 </head>
 <body>

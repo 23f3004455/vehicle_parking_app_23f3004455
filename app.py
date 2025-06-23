@@ -1,4 +1,5 @@
 from flask import Flask, flash
+from datetime import datetime
 from flask import render_template, redirect, request, session, url_for
 from models.models import db, User, ParkingLot, ParkingSpot, Reservation
 
@@ -237,7 +238,7 @@ def admin_view_users():
                 'username': user.username,
                 'phone': user.phone_number,
                 'spot_number': spot.spot_number,
-                'lot_name': lot.location_name,
+                'lot_name': lot.name,
                 'status': 'Occupied'
             })
         else:
@@ -287,6 +288,103 @@ def view_spots(lot_id):
     lot = ParkingLot.query.get_or_404(lot_id)
     spots = ParkingSpot.query.filter_by(lot_id=lot.id).all()
     return render_template('view_spots.html', lot=lot, spots=spots)
+
+
+@app.route('/user/lots')
+def user_lots():
+    if session.get('role') != 'user':
+        return redirect('/login')
+    lots = ParkingLot.query.all()
+    available_lots = []
+    for lot in lots:
+        available_count = ParkingSpot.query.filter_by(lot_id=lot.id, status='A').count()
+        available_lots.append({
+            'lot': lot,
+            'available_count': available_count
+        })
+    return render_template('user_lots.html', available_lots=available_lots)
+
+
+@app.route('/user/reserve/<int:lot_id>')
+def reserve_spot(lot_id):
+    if session.get('role') != 'user':
+        return redirect('/login')
+    # Find the first available spot
+    spot = ParkingSpot.query.filter_by(lot_id=lot_id, status='A').first()
+    if spot:
+        spot.status = 'O'  # Mark spot as occupied
+        new_res = Reservation(user_id=session.get('user_id'),
+                              spot_id=spot.id,
+                              parking_time=datetime.utcnow())
+        db.session.add(new_res)
+        db.session.commit()
+        flash(f'Reserved spot {spot.spot_number} in lot {spot.lot.name}.', 'success')
+    else:
+        flash('No available spots in this lot.', 'danger')
+    return redirect(url_for('user_dashboard'))
+
+
+@app.route('/user/release')
+def release_spot():
+    if session.get('role') != 'user':
+        return redirect('/login')
+    # Find active reservation for the user
+    reservation = Reservation.query.filter_by(user_id=session.get('user_id'), leaving_time=None).first()
+    if reservation:
+        reservation.leaving_time = datetime.utcnow()
+        spot = ParkingSpot.query.get(reservation.spot_id)
+        spot.status = 'A'  # Mark spot available
+        db.session.commit()
+        flash(f'Released spot {spot.spot_number} successfully.', 'success')
+    else:
+        flash('No active reservation found.', 'danger')
+    return redirect(url_for('user_dashboard'))
+
+@app.route('/user/history')
+def user_history():
+    if session.get('role') != 'user':
+        return redirect('/login')
+    reservations = Reservation.query.filter_by(user_id=session.get('user_id')).all()
+    history_data = []
+    for res in reservations:
+        spot = ParkingSpot.query.get(res.spot_id)
+        lot = ParkingLot.query.get(spot.lot_id) if spot else None
+        history_data.append({
+            'lot_name': lot.name if lot else 'N/A',
+            'spot_number': spot.spot_number if spot else '-',
+            'start_time': res.parking_time,
+            'end_time': res.leaving_time if res.leaving_time else 'Still Parked'
+        })
+    return render_template('user_history.html', history_data=history_data)
+
+
+@app.route('/admin/history')
+def admin_history():
+    if session.get('role') != 'admin':
+        return redirect('/login')
+    reservations = Reservation.query.order_by(Reservation.parking_time.desc()).all()
+
+    all_history = []
+    for res in reservations:
+        user = User.query.get(res.user_id)
+        spot = ParkingSpot.query.get(res.spot_id)
+        lot = ParkingLot.query.get(spot.lot_id) if spot else None
+
+        if res.leaving_time:
+            delta = res.leaving_time - res.parking_time
+            total_minutes = int(delta.total_seconds() // 60)
+        else:
+            total_minutes = None
+
+        all_history.append({
+            'user_fullname': user.fullname if user else 'N/A',
+            'lot_name': lot.name if lot else 'N/A',
+            'spot_number': spot.spot_number if spot else '-',
+            'start_time': res.parking_time,
+            'end_time': res.leaving_time if res.leaving_time else 'Still Parked',
+            'duration': f"{total_minutes} mins" if total_minutes is not None else "N/A"
+        })
+    return render_template('admin_history.html', history=all_history)
 
 
 if __name__ == "__main__":

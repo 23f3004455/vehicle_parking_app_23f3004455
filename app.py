@@ -1,5 +1,5 @@
 from flask import Flask, flash
-from datetime import datetime
+from datetime import datetime, timedelta
 from flask import render_template, redirect, request, session, url_for
 from models.models import db, User, ParkingLot, ParkingSpot, Reservation
 
@@ -313,9 +313,12 @@ def reserve_spot(lot_id):
     spot = ParkingSpot.query.filter_by(lot_id=lot_id, status='A').first()
     if spot:
         spot.status = 'O'  # Mark spot as occupied
-        new_res = Reservation(user_id=session.get('user_id'),
-                              spot_id=spot.id,
-                              parking_time=datetime.utcnow())
+        now_ist = datetime.utcnow() + timedelta(hours=5, minutes=30)  # IST time
+        new_res = Reservation(
+            user_id=session.get('user_id'),
+            spot_id=spot.id,
+            parking_time=now_ist
+        )
         db.session.add(new_res)
         db.session.commit()
         flash(f'Reserved spot {spot.spot_number} in lot {spot.lot.name}.', 'success')
@@ -329,21 +332,37 @@ def release_spot():
     if session.get('role') != 'user':
         return redirect('/login')
     # Find active reservation for the user
-    reservation = Reservation.query.filter_by(user_id=session.get('user_id'), leaving_time=None).first()
+    reservation = Reservation.query.filter_by(
+        user_id=session.get('user_id'),
+        leaving_time=None
+    ).first()
     if reservation:
-        reservation.leaving_time = datetime.utcnow()
+        reservation.leaving_time = datetime.utcnow() + timedelta(hours=5, minutes=30)  # IST time
         spot = ParkingSpot.query.get(reservation.spot_id)
-        spot.status = 'A'  # Mark spot available
+        spot.status = 'A'  # Make spot available again
+
+        # Calculate total minutes
+        delta = reservation.leaving_time - reservation.parking_time
+        total_minutes = int(delta.total_seconds() // 60)
+
+        # Get price per hour for the lot
+        lot = ParkingLot.query.get(spot.lot_id)
+        price_per_hour = lot.price
+        total_cost = (total_minutes / 60) * price_per_hour
+        reservation.cost = total_cost
+
         db.session.commit()
-        flash(f'Released spot {spot.spot_number} successfully.', 'success')
+        flash(f'Released spot {spot.spot_number}. Total cost: ₹{total_cost:.2f}', 'success')
     else:
         flash('No active reservation found.', 'danger')
     return redirect(url_for('user_dashboard'))
+
 
 @app.route('/user/history')
 def user_history():
     if session.get('role') != 'user':
         return redirect('/login')
+    
     reservations = Reservation.query.filter_by(user_id=session.get('user_id')).all()
     history_data = []
     for res in reservations:
@@ -353,9 +372,11 @@ def user_history():
             'lot_name': lot.name if lot else 'N/A',
             'spot_number': spot.spot_number if spot else '-',
             'start_time': res.parking_time,
-            'end_time': res.leaving_time if res.leaving_time else 'Still Parked'
+            'end_time': res.leaving_time if res.leaving_time else 'Still Parked',
+            'cost': res.cost if res.cost is not None else 0.0
         })
     return render_template('user_history.html', history_data=history_data)
+
 
 
 @app.route('/admin/history')
@@ -377,13 +398,15 @@ def admin_history():
             total_minutes = None
 
         all_history.append({
-            'user_fullname': user.fullname if user else 'N/A',
-            'lot_name': lot.name if lot else 'N/A',
-            'spot_number': spot.spot_number if spot else '-',
-            'start_time': res.parking_time,
-            'end_time': res.leaving_time if res.leaving_time else 'Still Parked',
-            'duration': f"{total_minutes} mins" if total_minutes is not None else "N/A"
+        'user_fullname': user.fullname if user else 'N/A',
+        'lot_name': lot.name if lot else 'N/A',
+        'spot_number': spot.spot_number if spot else '-',
+        'start_time': res.parking_time,
+        'end_time': res.leaving_time if res.leaving_time else 'Still Parked',
+        'duration': f"{total_minutes} mins" if total_minutes is not None else "N/A",
+        'cost': res.cost if res.cost is not None else 0.0
         })
+        
     return render_template('admin_history.html', history=all_history)
 
 

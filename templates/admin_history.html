@@ -14,6 +14,7 @@
                     <th>Start Time</th>
                     <th>End Time</th>
                     <th>Duration</th>
+                    <th>Cost</th>
                 </tr>
             </thead>
             <tbody>
@@ -31,6 +32,7 @@
                         {% endif %}
                     </td>
                     <td>{{ h.duration }}</td>
+                    <td>₹{{ h.cost|round(2) }}</td>
                 </tr>
                 {% endfor %}
             </tbody>

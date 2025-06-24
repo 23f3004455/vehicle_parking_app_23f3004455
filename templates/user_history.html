@@ -12,6 +12,7 @@
                     <th>Spot Number</th>
                     <th>Start Time</th>
                     <th>End Time</th>
+                    <th>Cost</th>
                 </tr>
             </thead>
             <tbody>
@@ -27,6 +28,7 @@
                             {{ item.end_time.strftime("%Y-%m-%d %H:%M:%S") }}
                         {% endif %}
                     </td>
+                    <td>₹{{ item.cost|round(2) }}</td>
                 </tr>
                 {% endfor %}
             </tbody>

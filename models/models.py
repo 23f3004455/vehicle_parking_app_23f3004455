@@ -48,3 +48,4 @@ class Reservation(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     parking_time = db.Column(db.DateTime, default=datetime.utcnow)
     leaving_time = db.Column(db.DateTime, nullable=True)
+    cost = db.Column(db.Float, default=0.0)

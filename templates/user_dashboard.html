@@ -1,18 +1,16 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>User Dashboard</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/user_dashboard.css') }}">
-</head>
-<body>
-    <div class="container">
-        <h2>User Dashboard</h2>
-        <div style="margin: 20px 0;">
-            <a href="{{ url_for('user_lots') }}" class="btn btn-primary">View Available Parking Lots</a>
-            <a href="{{ url_for('user_history') }}" class="btn btn-primary">View Parking History</a>
-            <a href="{{ url_for('release_spot') }}" class="btn btn-primary">Release Spot</a><br><br>
-            <a href="{{ url_for('logout') }}" class="btn btn-primary">Logout</a>
-        </div>
+{% set title = "User_dashboard" %}
+{% extends 'layout.html' %}
+
+{% block content %}
+<div class="container">
+    <h2>User Dashboard</h2>
+    <div style="margin: 20px 0;">
+        <a href="{{ url_for('user_lots') }}" class="btn btn-primary">View Available Parking Lots</a>
+        <a href="{{ url_for('user_history') }}" class="btn btn-primary">View Parking History</a>
+        <a href="{{ url_for('release_spot') }}" class="btn btn-primary">Release Spot</a><br><br>
+        <a href="{{ url_for('logout') }}" class="btn btn-primary">Logout</a>
     </div>
-</body>
-</html>
+</div>
+
+{% endblock %}
+
